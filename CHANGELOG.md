@@ -5,6 +5,7 @@ Yii Framework 2 mongodb extension Change Log
 ------------------------
 
 - Bug #297 : Fixed zero-index key problem in `ActiveQuery::Each()` (ziaratban)
+- Bug #299: drop limit of `batchSize` cursor option in application level according to [jira.mongodb(PHP-457)](https://jira.mongodb.org/browse/PHP-457) (ziaratban)
 
 
 2.1.10 under development
