@@ -46,6 +46,12 @@ abstract class ActiveRecord extends BaseActiveRecord
     public  static $batchDeleteSize = 500;
 
     /**
+     * @var string default lock field name in LockDocument() method
+     * this property can be define by end user
+    */
+    public static $lockField = '_lock';
+
+    /**
      * Returns the Mongo connection used by this AR class.
      * By default, the "mongodb" application component is used as the Mongo connection.
      * You may override this method if you want to use a different database connection.
@@ -433,7 +439,7 @@ abstract class ActiveRecord extends BaseActiveRecord
             throw new StaleObjectException('The object being deleted is outdated.');
         }
         $this->setOldAttributes(null);
-        $this->afterDelete()
+        $this->afterDelete();
 
         return $result;
     }
@@ -635,16 +641,18 @@ abstract class ActiveRecord extends BaseActiveRecord
      * @param mixed $id a document id(primary key > _id)
      * @param array $options list of options in format: optionName => optionValue.
      * @param Connection $db the Mongo connection used to execute the query.
-     * @return ActiveRecord|array|null the original document, or the modified document when $options['new'] is set.
+     * @return ActiveRecord|array|null the modified document.
      * Depending on the setting of [[asArray]], the query result may be either an array or an ActiveRecord object.
      * Null will be returned if the query results in nothing.
     */
     public static function LockDocument($id, $options = [], $db = null){
-        ($db ? $db : static::getDb())->transactionReady('lock document');
+        $db = $db ? $db : static::getDb();
+        $db->transactionReady('lock document');
+        $options['new'] = true;
         return
             self::find()
                 ->where(['_id' => $id])
-            ->modify(['_lock' => new ObjectId], $options, $db)
+            ->modify(['$set' => [static::$lockField => new ObjectId]], $options, $db)
         ;
     }
 }
