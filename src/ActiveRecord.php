@@ -610,7 +610,7 @@ abstract class ActiveRecord extends BaseActiveRecord
         self::$batchInsertCommand = static::getDb()->createCommand();
         register_shutdown_function(function(){
             if(self::hasBatchInsert())
-                yii::warning(static::className().' : batch insert mode not completed!');
+                yii::warning(self::className().' : batch insert mode not completed!');
         });
     }
 
@@ -632,7 +632,7 @@ abstract class ActiveRecord extends BaseActiveRecord
         }
         self::$batchInsertCommand->AddInsert($values);
         self::$batchInsertQueue++;
-        if(self::$batchInsertQueue >= static::$batchInsertSize)
+        if(self::$batchInsertQueue >= self::$batchInsertSize)
             self::flushBatchInsert();
     }
 
@@ -645,7 +645,7 @@ abstract class ActiveRecord extends BaseActiveRecord
         if(self::$batchInsertQueue === 0)
             return;
         self::$batchInsertQueue = 0;
-        $result = self::$batchInsertCommand->executeBatch(static::collectionName());
+        $result = self::$batchInsertCommand->executeBatch(self::collectionName());
         self::$batchInsertCommand->document = [];
         return $result;
     }
@@ -668,7 +668,7 @@ abstract class ActiveRecord extends BaseActiveRecord
         self::$batchUpdateCommand = static::getDb()->createCommand();
         register_shutdown_function(function(){
             if(self::hasBatchUpdate())
-                yii::warning(static::className().' : batch update mode not completed!');
+                yii::warning(self::className().' : batch update mode not completed!');
         });
     }
 
@@ -685,7 +685,7 @@ abstract class ActiveRecord extends BaseActiveRecord
         $condition = $this->getOldPrimaryKey(true);
         self::$batchUpdateCommand->AddUpdate($condition, $values);
         self::$batchUpdateQueue++;
-        if(self::$batchUpdateQueue >= static::$batchUpdateSize)
+        if(self::$batchUpdateQueue >= self::$batchUpdateSize)
             self::flushBatchUpdate();
     }
 
@@ -698,7 +698,7 @@ abstract class ActiveRecord extends BaseActiveRecord
         if(self::$batchUpdateQueue === 0)
             return;
         self::$batchUpdateQueue = 0;
-        $result = self::$batchUpdateCommand->executeBatch(static::collectionName());
+        $result = self::$batchUpdateCommand->executeBatch(self::collectionName());
         self::$batchUpdateCommand->document = [];
         return $result;
     }
@@ -721,7 +721,7 @@ abstract class ActiveRecord extends BaseActiveRecord
         self::$batchDeleteCommand = static::getDb()->createCommand();
         register_shutdown_function(function(){
             if(self::hasBatchDelete())
-                yii::warning(static::className().' : batch delete mode not completed!');
+                yii::warning(self::className().' : batch delete mode not completed!');
         });
     }
 
@@ -732,7 +732,7 @@ abstract class ActiveRecord extends BaseActiveRecord
         self::batchDeleteInit();
         self::$batchDeleteCommand->AddDelete($this->getOldPrimaryKey(true));
         self::$batchDeleteQueue++;
-        if(self::$batchDeleteQueue >= static::$batchDeleteSize)
+        if(self::$batchDeleteQueue >= self::$batchDeleteSize)
             self::flushBatchDelete();
     }
 
@@ -745,7 +745,7 @@ abstract class ActiveRecord extends BaseActiveRecord
         if(self::$batchDeleteQueue === 0)
             return;
         self::$batchDeleteQueue = 0;
-        $result = self::$batchDeleteCommand->executeBatch(static::collectionName());
+        $result = self::$batchDeleteCommand->executeBatch(self::collectionName());
         self::$batchDeleteCommand->document = [];
         return $result;
     }
