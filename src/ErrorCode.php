@@ -11,11 +11,13 @@ use MongoDB\Driver\Exception\Exception as MongoDBExceptionInterface;
 use yii\mongodb\Exception as YiiMongoDBException;
 
 /**
- * All errors code in mongodb. generated from https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.yml
+ * MongoDB error codes.
+ * @see https://github.com/mongodb/mongo/blob/master/src/mongo/base/error_codes.yml
  * @author Abolfazl Ziaratban <abolfazl.ziaratban@gmail.com>
 */
 
-class ErrorCodes {
+class ErrorCode
+{
 
     const OK = 0;
     const InternalError = 1;
@@ -347,11 +349,13 @@ class ErrorCodes {
     /**
      * Checking if instance of error exception is related to mongodb.
      * examples:
-     * try{
+     * ```php
+     * try {
      *     // mongodb commands ...  
-     * }catch(\Exception $e){
-     *     if(ErrorCodes::is($e))
+     * } catch(\Exception $e) {
+     *     if (ErrorCode::is($e)) {
      *         echo 'this is a mongodb error.';
+     *     }
      * }
      * 
      * try{
@@ -365,11 +369,12 @@ class ErrorCodes {
      * @return bool returning true value when this instance is related to mongodb.
      * when you set $verifyCode parameter then returns true value if instance is related to mongodb and error code exists.
     */
-    public static function is($e, $verifyCode = null){
+    public static function is($e, $verifyCode = null)
+    {
         if(
-            ($e instanceof YiiMongoDBException && $e->getPrevious() instanceof MongoDBExceptionInterface)
-                ||
             $e instanceof MongoDBExceptionInterface
+                ||
+            ($e instanceof YiiMongoDBException && $e->getPrevious() instanceof MongoDBExceptionInterface)
         ){
             if($verifyCode !== null && $e->getCode() !== $verifyCode)
                 return false;
