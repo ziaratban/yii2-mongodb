@@ -587,6 +587,7 @@ abstract class ActiveRecord extends BaseActiveRecord
      * invoke batchInsert() or batchUpdate() base on getIsNewRecord()
      * @param array $attributes list of attributes that need to be inserted or updated. Defaults to null,
      * meaning all attributes that are loaded will be inserted or updated.
+     * @return see ActiveRecord::batchInsert()
     */
     public function batchSave($attributes = null){
         if($this->getIsNewRecord())
@@ -620,6 +621,7 @@ abstract class ActiveRecord extends BaseActiveRecord
      * adding insert operation to queue base on current instance data
      * @param array $attributes list of attributes that need to be inserted. Defaults to null,
      * meaning all attributes that are loaded will be inserted.
+     * @return null|array return null if no execute command or return result of Command::executeBatch()
     */
     public function batchInsert($attributes = null){
         self::batchInsertInit();
@@ -635,7 +637,7 @@ abstract class ActiveRecord extends BaseActiveRecord
         self::$batchInsertCommand->AddInsert($values);
         self::$batchInsertQueue++;
         if(self::$batchInsertQueue >= static::$batchInsertSize)
-            self::flushBatchInsert();
+            return self::flushBatchInsert();
     }
 
     /**
@@ -678,6 +680,7 @@ abstract class ActiveRecord extends BaseActiveRecord
      * adding update operation to queue base on current instance data
      * @param array $attributes list of attribute names that need to be updated. Defaults to null,
      * meaning all attributes that are loaded from DB will be updated.
+     * @return null|array return null if no execute command or return result of Command::executeBatch()
     */
     public function batchUpdate($attributes = null){
         self::batchUpdateInit();
@@ -688,7 +691,7 @@ abstract class ActiveRecord extends BaseActiveRecord
         self::$batchUpdateCommand->addUpdate($condition, $values);
         self::$batchUpdateQueue++;
         if(self::$batchUpdateQueue >= static::$batchUpdateSize)
-            self::flushBatchUpdate();
+            return self::flushBatchUpdate();
     }
 
     /**
@@ -698,13 +701,14 @@ abstract class ActiveRecord extends BaseActiveRecord
      * Please refer to Query::where() on how to specify this parameter.
      * @param array $options List of options in format: optionName => optionValue.
      * Please refer to Command::addUpdate() on how to specify this parameter.
+     * @return null|array return null if no execute command or return result of Command::executeBatch()
     */
     public static function batchUpdateAll($attributes, $condition = [], $options = []){
         self::batchUpdateInit();
         self::$batchUpdateCommand->addUpdate($condition, $attributes, $options);
         self::$batchUpdateQueue++;
         if(self::$batchUpdateQueue >= static::$batchUpdateSize)
-            self::flushBatchUpdate();
+            return self::flushBatchUpdate();
     }
 
     /**
@@ -745,13 +749,14 @@ abstract class ActiveRecord extends BaseActiveRecord
 
     /**
      * adding delete operation to queue base on current instance data
+     * @return null|array return null if no execute command or return result of Command::executeBatch()
     */
     public function batchDelete(){
         self::batchDeleteInit();
         self::$batchDeleteCommand->AddDelete($this->getOldPrimaryKey(true));
         self::$batchDeleteQueue++;
         if(self::$batchDeleteQueue >= static::$batchDeleteSize)
-            self::flushBatchDelete();
+            return self::flushBatchDelete();
     }
 
     /**
@@ -760,13 +765,14 @@ abstract class ActiveRecord extends BaseActiveRecord
      * Please refer to Query::where() on how to specify this parameter.
      * @param array $options List of options in format: optionName => optionValue.
      * Please refer to Command::AddDelete() on how to specify this parameter.
+     * @return null|array return null if no execute command or return result of Command::executeBatch()
     */
     public function batchDeleteAll($condition = [], $options = []){
         self::batchDeleteInit();
         self::$batchDeleteCommand->AddDelete($condition, $options);
         self::$batchDeleteQueue++;
         if(self::$batchDeleteQueue >= static::$batchDeleteSize)
-            self::flushBatchDelete();
+            return self::flushBatchDelete();
     }
 
     /**
