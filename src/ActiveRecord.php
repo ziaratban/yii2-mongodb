@@ -740,14 +740,6 @@ abstract class ActiveRecord extends BaseActiveRecord
     }
 
     /**
-     * resetting queue
-    */
-    public static function resetBatchUpdate(){
-        self::$batchUpdateQueue = 0;
-        self::$batchUpdateCommand->document = [];
-    }
-
-    /**
      * checking if current ActiveRecord class has documents in queue for delete
      * @return bool
     */
