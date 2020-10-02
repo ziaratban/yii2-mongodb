@@ -371,21 +371,25 @@ class Connection extends Component
             }
             $token = 'Opening MongoDB connection: ' . $this->dsn;
             try {
-                if($this->enableLogging)
+                if ($this->enableLogging) {
                     Yii::trace($token, __METHOD__);
-                if($this->enableProfiling)
+                }
+                if ($this->enableProfiling) {
                     Yii::beginProfile($token, __METHOD__);
+                }
                 $options = $this->options;
 
                 $this->manager = new Manager($this->dsn, $options, $this->driverOptions);
                 $this->manager->selectServer($this->manager->getReadPreference());
 
                 $this->initConnection();
-                if($this->enableProfiling)
+                if ($this->enableProfiling) {
                     Yii::endProfile($token, __METHOD__);
+                }
             } catch (\Exception $e) {
-                if($this->enableProfiling)
+                if ($this->enableProfiling) {
                     Yii::endProfile($token, __METHOD__);
+                }
                 throw new Exception($e->getMessage(), (int) $e->getCode(), $e);
             }
 

@@ -60,6 +60,14 @@ class Query extends Component implements QueryInterface
      */
     public $options = [];
 
+    /**
+     * Returns the connection used by this Query.
+     * @param Connection $db Mongo connection.
+     * @return Connection connection instance.
+     */
+    public function getDb($db = null){
+        return $db === null ? $db : Yii::$app->get('mongodb');
+    }
 
     /**
      * Returns the Mongo collection for this query.
@@ -68,11 +76,7 @@ class Query extends Component implements QueryInterface
      */
     public function getCollection($db = null)
     {
-        if ($db === null) {
-            $db = Yii::$app->get('mongodb');
-        }
-
-        return $db->getCollection($this->from);
+        return $this->getDb($db)->getCollection($this->from);
     }
 
     /**
@@ -204,30 +208,32 @@ class Query extends Component implements QueryInterface
     /**
      * Fetches rows from the given Mongo cursor.
      * @param bool $all whether to fetch all rows or only first one.
-     * @param string|callable $indexBy the column name or PHP callback,
-     * by which the query results should be indexed by.
      * @param yii\mongodb\Connection $db the MongoDB connection used to fetch rows.
      * @throws Exception on failure.
      * @return array|bool result.
      */
-    protected function fetchRows($all = true, $indexBy = null, $db = null)
+    protected function fetchRows($all = true, $db = null)
     {
-        $db = $db === null ? yii::$app->mongodb : $db;
+        $db = $this->getDb($db);
         $cursor = $this->buildCursor($db);
         $token = 'fetch cursor id = ' . $cursor->getId();
-        if($db->enableLogging)
+        if ($db->enableLogging) {
             Yii::info($token, __METHOD__);
+        }
         try {
-            if($db->enableProfiling)
+            if ($db->enableProfiling) {
                 Yii::beginProfile($token, __METHOD__);
+            }
             $result = $this->fetchRowsInternal($cursor, $all);
-            if($db->enableProfiling)
+            if ($db->enableProfiling) {
                 Yii::endProfile($token, __METHOD__);
+            }
 
             return $result;
         } catch (\Exception $e) {
-            if($db->enableProfiling)
+            if ($db->enableProfiling) {
                 Yii::endProfile($token, __METHOD__);
+            }
             throw new Exception($e->getMessage(), (int) $e->getCode(), $e);
         }
     }
@@ -284,7 +290,7 @@ class Query extends Component implements QueryInterface
             'class' => BatchQueryResult::className(),
             'query' => $this,
             'batchSize' => $batchSize,
-            'db' => $db,
+            'db' => $this->getDb($db),
             'each' => false,
         ]);
     }
@@ -312,7 +318,7 @@ class Query extends Component implements QueryInterface
             'class' => BatchQueryResult::className(),
             'query' => $this,
             'batchSize' => $batchSize,
-            'db' => $db,
+            'db' => $this->getDb($db),
             'each' => true,
         ]);
     }
@@ -328,7 +334,7 @@ class Query extends Component implements QueryInterface
         if (!empty($this->emulateExecution)) {
             return [];
         }
-        $rows = $this->fetchRows(true, $this->indexBy, $db);
+        $rows = $this->fetchRows(true, $db);
         return $this->populate($rows);
     }
 
