@@ -11,6 +11,7 @@ use MongoDB\BSON\Binary;
 use MongoDB\BSON\Type;
 use MongoDB\BSON\ObjectId;
 use Yii;
+use yii\base\UnknownPropertyException;
 use yii\base\InvalidConfigException;
 use yii\db\BaseActiveRecord;
 use yii\db\StaleObjectException;
@@ -104,6 +105,8 @@ abstract class ActiveRecord extends BaseActiveRecord
      * this property can be define by end user
     */
     public static $lockField = '_lock';
+
+    protected $unsetAttrs = [];
 
     /**
      * Returns the Mongo connection used by this AR class.
@@ -245,6 +248,11 @@ abstract class ActiveRecord extends BaseActiveRecord
         throw new InvalidConfigException('The attributes() method of mongodb ActiveRecord has to be implemented by child classes.');
     }
 
+    public function __set($name, $value){
+        unset($this->unsetAttrs[$name]);
+        parent::__set($name,$value);
+    }
+
     /**
      * Inserts a row into the associated Mongo collection using the attribute values of this record.
      *
@@ -329,6 +337,16 @@ abstract class ActiveRecord extends BaseActiveRecord
         return true;
     }
 
+    public function unset($attribute){
+        if($this->getIsNewRecord()){
+            throw new InvalidConfigException('You can not use `unset` method when the current record is new.');
+        }
+        if(!$this->hasAttribute($attribute)){
+            throw new UnknownPropertyException('Unseting unknown property: ' . get_class($this) . '::' . $attribute);
+        }
+        $this->unsetAttrs[$attribute] = '';
+    }
+
     /**
      * Saves the changes to this active record into the associated database table.
      *
@@ -408,7 +426,7 @@ abstract class ActiveRecord extends BaseActiveRecord
             return false;
         }
         $values = $this->getDirtyAttributes($attributes);
-        if (empty($values)) {
+        if (empty($values) && empty($this->unsetAttrs)) {
             $this->afterSave(false, $values);
             return 0;
         }
@@ -419,6 +437,20 @@ abstract class ActiveRecord extends BaseActiveRecord
                 $values[$lock] = $this->$lock + 1;
             }
             $condition[$lock] = $this->$lock;
+        }
+        if (!empty($this->unsetAttrs)){
+            foreach ($this->unsetAttrs as $attr => $_){
+                unset($values[$attr],$this->$attr);
+            }
+            if (empty($values)){
+                $values = ['$unset' => $this->unsetAttrs];
+            } else {
+                $values = [
+                    '$set' => $values,
+                    '$unset' => $this->unsetAttrs,
+                ];
+            }
+            $this->unsetAttrs = [];
         }
         // We do not check the return value of update() because it's possible
         // that it doesn't change anything and thus returns 0.
