@@ -248,9 +248,23 @@ abstract class ActiveRecord extends BaseActiveRecord
         throw new InvalidConfigException('The attributes() method of mongodb ActiveRecord has to be implemented by child classes.');
     }
 
-    public function __set($name, $value){
+    public function __set($name, $value)
+    {
         unset($this->unsetAttrs[$name]);
         parent::__set($name,$value);
+    }
+
+    public function unset()
+    {
+        if ($this->getIsNewRecord()) {
+            throw new InvalidConfigException('You can not use `unset` method when the current record is new.');
+        }
+        foreach(func_get_args() as $attribute) {
+            if (!$this->hasAttribute($attribute)) {
+                throw new UnknownPropertyException('Unsetting unknown property: ' . get_class($this) . '::' . $attribute);
+            }
+            $this->unsetAttrs[$attribute] = '';
+        }
     }
 
     /**
@@ -335,16 +349,6 @@ abstract class ActiveRecord extends BaseActiveRecord
         $this->afterSave(true, $changedAttributes);
 
         return true;
-    }
-
-    public function unset($attribute){
-        if($this->getIsNewRecord()){
-            throw new InvalidConfigException('You can not use `unset` method when the current record is new.');
-        }
-        if(!$this->hasAttribute($attribute)){
-            throw new UnknownPropertyException('Unseting unknown property: ' . get_class($this) . '::' . $attribute);
-        }
-        $this->unsetAttrs[$attribute] = '';
     }
 
     /**
@@ -438,15 +442,17 @@ abstract class ActiveRecord extends BaseActiveRecord
             }
             $condition[$lock] = $this->$lock;
         }
-        if (!empty($this->unsetAttrs)){
-            foreach ($this->unsetAttrs as $attr => $_){
-                unset($values[$attr],$this->$attr);
+
+        $document = $values;
+        if (!empty($this->unsetAttrs)) {
+            foreach ($this->unsetAttrs as $attr => $_) {
+                unset($document[$attr],$values[$attr],$this->$attr);
             }
-            if (empty($values)){
-                $values = ['$unset' => $this->unsetAttrs];
+            if (empty($document)) {
+                $document = ['$unset' => $this->unsetAttrs];
             } else {
-                $values = [
-                    '$set' => $values,
+                $document = [
+                    '$set' => $document,
                     '$unset' => $this->unsetAttrs,
                 ];
             }
@@ -454,7 +460,7 @@ abstract class ActiveRecord extends BaseActiveRecord
         }
         // We do not check the return value of update() because it's possible
         // that it doesn't change anything and thus returns 0.
-        $rows = static::getCollection()->update($condition, $values);
+        $rows = static::getCollection()->update($condition, $document);
 
         if ($lock !== null && !$rows) {
             throw new StaleObjectException('The object being updated is outdated.');
