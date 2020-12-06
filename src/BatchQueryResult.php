@@ -146,7 +146,7 @@ class BatchQueryResult extends BaseObject implements \Iterator
 
         while ($count++ < $this->batchSize) {
             $row = $this->_iterator->current();
-            if ($row === null) {
+            if (!isset($row)) {
                 break;
             }
             $this->_iterator->next();
