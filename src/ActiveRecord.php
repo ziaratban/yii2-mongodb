@@ -305,11 +305,12 @@ abstract class ActiveRecord extends BaseActiveRecord
             return false;
         }
 
-        if(!$this->isTransactional(self::OP_INSERT))
+        if (!$this->isTransactional(self::OP_INSERT)) {
             return $this->insertInternal($attributes);
+        }
 
         $result = null;
-        static::getDb()->transaction(function()use($attribute,&$result){
+        static::getDb()->transaction(function() use ($attribute, &$result) {
             $result = $this->insertInternal($attributes);
         });
         return $result;
@@ -404,11 +405,12 @@ abstract class ActiveRecord extends BaseActiveRecord
             return false;
         }
 
-        if(!$this->isTransactional(self::OP_UPDATE))
+        if (!$this->isTransactional(self::OP_UPDATE)) {
             return $this->updateInternal($attributeNames);
+        }
 
         $result = null;
-        static::getDb()->transaction(function()use($attributeNames,&$result){
+        static::getDb()->transaction(function() use ($attributeNames, &$result) {
             $result = $this->updateInternal($attributeNames);
         });
         return $result;
@@ -495,11 +497,12 @@ abstract class ActiveRecord extends BaseActiveRecord
      */
     public function delete()
     {
-        if(!$this->isTransactional(self::OP_DELETE))
+        if(!$this->isTransactional(self::OP_DELETE)) {
             return $this->deleteInternal();
+        }
 
         $result = null;
-        static::getDb()->transaction(function()use(&$result){
+        static::getDb()->transaction(function() use (&$result) {
             $result = $this->deleteInternal();
         });
         return $result;
@@ -511,8 +514,9 @@ abstract class ActiveRecord extends BaseActiveRecord
      */
     protected function deleteInternal()
     {
-        if(!$this->beforeDelete())
+        if (!$this->beforeDelete()) {
             return false;
+        }
         // we do not check the return value of deleteAll() because it's possible
         // the record is already deleted in the database and thus the method will return 0
         $condition = $this->getOldPrimaryKey(true);
@@ -866,25 +870,31 @@ abstract class ActiveRecord extends BaseActiveRecord
      * Locks a document of the collection in a transaction(like `select for update` feature in mysql)
      * @see https://www.mongodb.com/blog/post/how-to-select--for-update-inside-mongodb-transactions
      * @param mixed $id a document id(primary key > _id)
-     * @param string $lockFieldName The name of the field you want to lock. default is '_lock'
+     * @param string $lockFieldName The name of the field you want to lock.
      * @param array $modifyOptions list of the options in format: optionName => optionValue.
      * @param Connection $db the Mongo connection uses it to execute the query.
      * @return ActiveRecord|null the locked document.
      * Returns instance of ActiveRecord. Null will be returned if the query does not have a result.
     */
-    public static function LockDocument($id, $lockFieldName = '_lock', $modifyOptions = [], $db = null){
+    public static function LockDocument($id, $lockFieldName, $modifyOptions = [], $db = null)
+    {
         $db = $db ? $db : static::getDb();
         $db->transactionReady('lock document');
         $options['new'] = true;
-        return
-            static::find()
-                ->where(['_id' => $id])
-            ->modify(['$set' => [$lockFieldName => new ObjectId]], $modifyOptions, $db)
+        return static::find()
+            ->where(['_id' => $id])
+            ->modify(
+                [
+                    '$set' =>[$lockFieldName => new ObjectId]
+                ],
+                $modifyOptions,
+                $db
+            )
         ;
     }
 
     /**
-     * locking a document in stubborn mode on a transaction(like `select for update` feature in mysql)
+     * Locking a document in stubborn mode on a transaction (like `select for update` feature in MySQL)
      * @see https://www.mongodb.com/blog/post/how-to-select--for-update-inside-mongodb-transactions
      * notice : you can not use stubborn mode if transaction is started in current session(or use your session with `mySession` parameter).
      * @param mixed $id a document id(primary key > _id)
@@ -902,42 +912,52 @@ abstract class ActiveRecord extends BaseActiveRecord
      * Returns instance of ActiveRecord. Null will be returned if the query does not have a result.
      * When the total number of attempts to lock the document passes `try`, conflict error will be thrown
     */
-    public static function LockDocumentStubbornly($id, $options = [], $db = null){
-
+    public static function LockDocumentStubbornly($id, $lockFieldName, $options = [], $db = null)
+    {
         $db = $db ? $db : static::getDb();
 
-        $options = array_replace_recursive([
-            'mySession' => false,
-            'transactionOptions' => [],
-            'modifyOptions' => [],
-            'sleep' => 1000000,
-            'try' => 0,
-            'lockFieldName' => '_lock',
-        ],$options);
+        $options = array_replace_recursive(
+            [
+                'mySession' => false,
+                'transactionOptions' => [],
+                'modifyOptions' => [],
+                'sleep' => 1000000,
+                'try' => 0,
+            ],
+            $options
+        );
 
         $options['modifyOptions']['new'] = true;
 
         $session = $options['mySession'] ? $options['mySession'] : $db->startSessionOnce(); 
 
-        if($session->getInTransaction())
+        if ($session->getInTransaction()) {
             throw new Exception('You can\'t use stubborn lock feature because current connection is in a transaction.');
+        }
 
-        #start stubborn
+        // start stubborn
         $tiredCounter = 0;
         StartStubborn:
         $session->transaction->start($options['transactionOptions']);
-        try{
-            $doc = 
-                static::find()
-                    ->where(['_id' => $id])
-                ->modify(['$set' => [$options['lockFieldName'] => new ObjectId]], $options['modifyOptions'], $db)
-            ;
+        try {
+            $doc = static::find()
+                ->where(['_id' => $id])
+                ->modify(
+                    [
+                        '$set' => [
+                            $lockFieldName => new ObjectId
+                        ]
+                    ],
+                    $options['modifyOptions'],
+                    $db
+                );
             return $doc;
-        }catch(\Exception $e){
+        } catch(\Exception $e) {
             $session->transaction->rollBack();
             $tiredCounter++;
-            if($options['try'] !== 0 && $tiredCounter === $options['try'])
+            if ($options['try'] !== 0 && $tiredCounter === $options['try']) {
                 throw $e;
+            }
             usleep($options['sleep']);
             goto StartStubborn;
         }
