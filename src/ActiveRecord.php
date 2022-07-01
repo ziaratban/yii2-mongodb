@@ -497,7 +497,7 @@ abstract class ActiveRecord extends BaseActiveRecord
      */
     public function delete()
     {
-        if(!$this->isTransactional(self::OP_DELETE)) {
+        if (!$this->isTransactional(self::OP_DELETE)) {
             return $this->deleteInternal();
         }
 
@@ -867,9 +867,9 @@ abstract class ActiveRecord extends BaseActiveRecord
     }
 
     /**
-     * Locks a document of the collection in a transaction(like `select for update` feature in mysql)
+     * Locks a document of the collection in a transaction (like `select for update` feature in MySQL)
      * @see https://www.mongodb.com/blog/post/how-to-select--for-update-inside-mongodb-transactions
-     * @param mixed $id a document id(primary key > _id)
+     * @param mixed $id a document id (primary key > _id)
      * @param string $lockFieldName The name of the field you want to lock.
      * @param array $modifyOptions list of the options in format: optionName => optionValue.
      * @param Connection $db the Mongo connection uses it to execute the query.
@@ -896,7 +896,7 @@ abstract class ActiveRecord extends BaseActiveRecord
     /**
      * Locking a document in stubborn mode on a transaction (like `select for update` feature in MySQL)
      * @see https://www.mongodb.com/blog/post/how-to-select--for-update-inside-mongodb-transactions
-     * notice : you can not use stubborn mode if transaction is started in current session(or use your session with `mySession` parameter).
+     * notice : you can not use stubborn mode if transaction is started in current session (or use your session with `mySession` parameter).
      * @param mixed $id a document id(primary key > _id)
      * @param array $options list of options in format:
      *   [

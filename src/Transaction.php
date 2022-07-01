@@ -47,7 +47,7 @@ class Transaction extends \yii\base\BaseObject
     protected function yiiDebug($message, $category = 'mongodb')
     {
         if ($this->clientSession->db->enableLogging) {
-            yii::debug($message,$category);
+            Yii::debug($message,$category);
         }
     }
 
@@ -59,7 +59,7 @@ class Transaction extends \yii\base\BaseObject
     protected function yiiBeginProfile($token, $category = 'mongodb')
     {
         if ($this->clientSession->db->enableProfiling) {
-            yii::beginProfile($token,$category);
+            Yii::beginProfile($token,$category);
         }
     }
 
@@ -71,7 +71,7 @@ class Transaction extends \yii\base\BaseObject
     protected function yiiEndProfile($token, $category = 'mongodb')
     {
         if ($this->clientSession->db->enableProfiling) {
-            yii::endProfile($token,$category);
+            Yii::endProfile($token,$category);
         }
     }
 
@@ -103,7 +103,7 @@ class Transaction extends \yii\base\BaseObject
     */
     public function start($transactionOptions = [])
     {
-        Command::prepareCPOptions($transactionOptions);
+        Command::prepareManagerOptions($transactionOptions);
         $this->yiiDebug('Starting mongodb transaction ...', __METHOD__);
         if ($this->clientSession->getInTransaction()) {
             throw new Exception('Nested transaction not supported');
