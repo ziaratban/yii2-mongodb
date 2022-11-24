@@ -870,22 +870,29 @@ abstract class ActiveRecord extends BaseActiveRecord
      * Locks a document of the collection in a transaction (like `select for update` feature in MySQL)
      * @see https://www.mongodb.com/blog/post/how-to-select--for-update-inside-mongodb-transactions
      * @param mixed $id a document id (primary key > _id)
-     * @param string $lockFieldName The name of the field you want to lock.
+     * @param string|array $lockFieldNames The name of the field(s) you want to lock.
      * @param array $modifyOptions list of the options in format: optionName => optionValue.
      * @param Connection $db the Mongo connection uses it to execute the query.
      * @return ActiveRecord|null the locked document.
      * Returns instance of ActiveRecord. Null will be returned if the query does not have a result.
     */
-    public static function LockDocument($id, $lockFieldName, $modifyOptions = [], $db = null)
+    public static function LockDocument($id, $lockFieldNames, $modifyOptions = [], $db = null)
     {
         $db = $db ? $db : static::getDb();
         $db->transactionReady('lock document');
+        $lockFieldNames = is_array($lockFieldNames) ? $lockFieldNames : [$lockFieldNames];
         $options['new'] = true;
+
+        $set = [];
+        foreach ($lockFieldNames as $field) {
+            $set[$field] = new ObjectId;
+        }
+
         return static::find()
             ->where(['_id' => $id])
             ->modify(
                 [
-                    '$set' =>[$lockFieldName => new ObjectId]
+                    '$set' => $set
                 ],
                 $modifyOptions,
                 $db
@@ -894,18 +901,44 @@ abstract class ActiveRecord extends BaseActiveRecord
     }
 
     /**
+     * Locks a document of the collection in a transaction (like `select for update` feature in MySQL)
+     * @see https://www.mongodb.com/blog/post/how-to-select--for-update-inside-mongodb-transactions
+     * @param mixed $conditions Conditions for locking documents. Please refer to [[Query::where()]] on how to specify this parameter.
+     * @param string|array $lockFieldNames The name of the field(s) you want to lock.
+     * @param array $modifyOptions list of the options in format: optionName => optionValue.
+     * @param Connection $db the Mongo connection uses it to execute the query.
+     * @return ActiveRecord|null the locked document.
+     * Returns instance of ActiveRecord. Null will be returned if the query does not have a result.
+    */
+    public static function LockDocuments($conditions, $lockFieldNames, $modifyOptions = [], $db = null)
+    {
+        $db = $db ? $db : static::getDb();
+        $db->transactionReady('lock documents');
+        $lockFieldNames = is_array($lockFieldNames) ? $lockFieldNames : [$lockFieldNames];
+        $options['new'] = true;
+
+        $attributes = [];
+        foreach ($lockFieldNames as $field) {
+            $attributes[$field] = new ObjectId;
+        }
+
+        static::updateAll($attributes,$conditions);
+
+        return static::find()->where($attributes)->all();
+    }
+    /**
      * Locking a document in stubborn mode on a transaction (like `select for update` feature in MySQL)
      * @see https://www.mongodb.com/blog/post/how-to-select--for-update-inside-mongodb-transactions
      * notice : you can not use stubborn mode if transaction is started in current session (or use your session with `mySession` parameter).
-     * @param mixed $id a document id(primary key > _id)
+     * @param mixed $id a document id (primary key > _id)
      * @param array $options list of options in format:
      *   [
-     *     'mySession' => false,        #A custom session instance of ClientSession for start a transaction.
-     *     'transactionOptions' => [],  #New transaction options. see $transactionOptions in Transaction::start()
-     *     'modifyOptions' => [],       #See $options in ActiveQuery::modify()
-     *     'sleep' => 1000000,          #A time parameter in microseconds to wait. the default is one second.
-     *     'try' => 0,                  #Maximum count of retry. throw write conflict error after reached this value. the zero default is unlimited.
-     *     'lockFieldName' => '_lock'   #The name of the field you want to lock. default is '_lock'
+     *     'mySession' => false,        # A custom session instance of ClientSession for start a transaction.
+     *     'transactionOptions' => [],  # New transaction options. see $transactionOptions in Transaction::start()
+     *     'modifyOptions' => [],       # See $options in ActiveQuery::modify()
+     *     'sleep' => 1000000,          # A time parameter in microseconds to wait. the default is one second.
+     *     'try' => 0,                  # Maximum count of retry. throw write conflict error after reached this value. the zero default is unlimited.
+     *     'lockFieldName' => '_lock'   # The name of the field you want to lock. default is '_lock'
      *   ]
      * @param Connection $db the Mongo connection uses it to execute the query.
      * @return ActiveRecord|null returns the locked document.
