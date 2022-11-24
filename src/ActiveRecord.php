@@ -905,12 +905,11 @@ abstract class ActiveRecord extends BaseActiveRecord
      * @see https://www.mongodb.com/blog/post/how-to-select--for-update-inside-mongodb-transactions
      * @param mixed $conditions Conditions for locking documents. Please refer to [[Query::where()]] on how to specify this parameter.
      * @param string|array $lockFieldNames The name of the field(s) you want to lock.
-     * @param array $modifyOptions list of the options in format: optionName => optionValue.
      * @param Connection $db the Mongo connection uses it to execute the query.
      * @return ActiveRecord|null the locked document.
      * Returns instance of ActiveRecord. Null will be returned if the query does not have a result.
     */
-    public static function LockDocuments($conditions, $lockFieldNames, $modifyOptions = [], $db = null)
+    public static function LockDocuments($conditions, $lockFieldNames, $db = null)
     {
         $db = $db ? $db : static::getDb();
         $db->transactionReady('lock documents');
