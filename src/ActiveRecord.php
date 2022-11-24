@@ -923,7 +923,7 @@ abstract class ActiveRecord extends BaseActiveRecord
 
         static::updateAll($attributes,$conditions);
 
-        return static::find()->where($attributes)->all();
+        return static::find()->where($conditions)->all();
     }
     /**
      * Locking a document in stubborn mode on a transaction (like `select for update` feature in MySQL)
