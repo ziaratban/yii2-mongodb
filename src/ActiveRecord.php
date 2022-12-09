@@ -520,27 +520,26 @@ abstract class ActiveRecord extends BaseActiveRecord
     /**
      * Locks a document of the collection in a transaction (like `select for update` feature in MySQL)
      * @see https://www.mongodb.com/blog/post/how-to-select--for-update-inside-mongodb-transactions
-     * @param mixed $id a document id (primary key > _id)
+     * @param mixed $idOrWhere a document id or condition for where() method
      * @param string|array $lockFieldNames The name of the field(s) you want to lock.
      * @param array $modifyOptions list of the options in format: optionName => optionValue.
      * @param Connection $db the Mongo connection uses it to execute the query.
      * @return ActiveRecord|null the locked document.
      * Returns instance of ActiveRecord. Null will be returned if the query does not have a result.
     */
-    public static function LockDocument($id, $lockFieldNames, $modifyOptions = [], $db = null)
+    public static function lockDocument($idOrWhere, $lockFieldNames, $modifyOptions = [], $db = null)
     {
         $db = $db ? $db : static::getDb();
         $db->transactionReady('lock document');
-        $lockFieldNames = is_array($lockFieldNames) ? $lockFieldNames : [$lockFieldNames];
-        $options['new'] = true;
+        $modifyOptions['new'] = true;
 
         $set = [];
-        foreach ($lockFieldNames as $field) {
+        foreach (is_array($lockFieldNames) ? $lockFieldNames : [$lockFieldNames] as $field) {
             $set[$field] = new ObjectId;
         }
 
         return static::find()
-            ->where(['_id' => $id])
+            ->where(is_array($idOrWhere) ? $idOrWhere : ['_id' => $idOrWhere])
             ->modify(
                 [
                     '$set' => $set
@@ -556,25 +555,20 @@ abstract class ActiveRecord extends BaseActiveRecord
      * @see https://www.mongodb.com/blog/post/how-to-select--for-update-inside-mongodb-transactions
      * @param mixed $conditions Conditions for locking documents. Please refer to [[Query::where()]] on how to specify this parameter.
      * @param string|array $lockFieldNames The name of the field(s) you want to lock.
-     * @param Connection $db the Mongo connection uses it to execute the query.
-     * @return ActiveRecord|null the locked document.
-     * Returns instance of ActiveRecord. Null will be returned if the query does not have a result.
+     * @return ActiveQuery
+     * Returns instance of ActiveQuery.
     */
-    public static function LockDocuments($conditions, $lockFieldNames, $db = null)
+    public static function lockDocuments($conditions, $lockFieldNames)
     {
-        $db = $db ? $db : static::getDb();
-        $db->transactionReady('lock documents');
-        $lockFieldNames = is_array($lockFieldNames) ? $lockFieldNames : [$lockFieldNames];
-        $options['new'] = true;
-
+        static::getDb()->transactionReady('lock documents');
         $attributes = [];
-        foreach ($lockFieldNames as $field) {
+        foreach (is_array($lockFieldNames) ? $lockFieldNames : [$lockFieldNames] as $field) {
             $attributes[$field] = new ObjectId;
         }
 
         static::updateAll($attributes,$conditions);
 
-        return static::find()->where($conditions)->all();
+        return static::find()->where($conditions);
     }
     /**
      * Locking a document in stubborn mode on a transaction (like `select for update` feature in MySQL)

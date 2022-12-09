@@ -7,6 +7,7 @@
 
 namespace yii\mongodb;
 
+use MongoDB\BSON\ObjectId;
 use yii\db\ActiveQueryInterface;
 use yii\db\ActiveQueryTrait;
 use yii\db\ActiveRelationTrait;
@@ -173,6 +174,38 @@ class ActiveQuery extends Query implements ActiveQueryInterface
             return reset($models) ?: null;
         }
         return null;
+    }
+
+    /**
+     * Locks a document of the collection in a transaction (like `select for update` feature in MySQL)
+     * @see https://www.mongodb.com/blog/post/how-to-select--for-update-inside-mongodb-transactions
+     * @param string|array $lockFieldNames The name of the field(s) you want to lock.
+     * @param array $modifyOptions list of the options in format: optionName => optionValue.
+     * @param Connection $db the Mongo connection uses it to execute the query.
+     * @return ActiveRecord|array|null the original document, or the modified document when $options['new'] is set.
+     * Depending on the setting of [[asArray]], the query result may be either an array or an ActiveRecord object.
+     * Null will be returned if the query results in nothing.
+    */
+    public function lockDocument($lockFieldNames, $modifyOptions = [], $db = null){
+        $db = $db ? $db : static::getDb();
+        $db->transactionReady('lock document');
+        $lockFieldNames = is_array($lockFieldNames) ? $lockFieldNames : [$lockFieldNames];
+        $modifyOptions['new'] = true;
+
+        $set = [];
+        foreach ($lockFieldNames as $field) {
+            $set[$field] = new ObjectId;
+        }
+
+        return 
+            $this->modify(
+                [
+                    '$set' => $set
+                ],
+                $modifyOptions,
+                $db
+            )
+        ;
     }
 
     /**
