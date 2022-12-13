@@ -900,26 +900,6 @@ abstract class ActiveRecord extends BaseActiveRecord
     }
 
     /**
-     * Locks a document of the collection in a transaction (like `select for update` feature in MySQL)
-     * @see https://www.mongodb.com/blog/post/how-to-select--for-update-inside-mongodb-transactions
-     * @param mixed $conditions Conditions for locking documents. Please refer to [[Query::where()]] on how to specify this parameter.
-     * @param string|array $lockFieldNames The name of the field(s) you want to lock.
-     * @return ActiveQuery
-     * Returns instance of ActiveQuery.
-    */
-    public static function lockDocuments($conditions, $lockFieldNames)
-    {
-        static::getDb()->transactionReady('lock documents');
-        $attributes = [];
-        foreach (is_array($lockFieldNames) ? $lockFieldNames : [$lockFieldNames] as $field) {
-            $attributes[$field] = new ObjectId;
-        }
-
-        static::updateAll($attributes,$conditions);
-
-        return static::find()->where($conditions);
-    }
-    /**
      * Locking a document in stubborn mode on a transaction (like `select for update` feature in MySQL)
      * @see https://www.mongodb.com/blog/post/how-to-select--for-update-inside-mongodb-transactions
      * notice : you can not use stubborn mode if transaction is started in current session (or use your session with `mySession` parameter).

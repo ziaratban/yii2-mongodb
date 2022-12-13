@@ -222,6 +222,26 @@ class ActiveQuery extends Query implements ActiveQueryInterface
     }
 
     /**
+     * Locks a document of the collection in a transaction (like `select for update` feature in MySQL)
+     * @see https://www.mongodb.com/blog/post/how-to-select--for-update-inside-mongodb-transactions
+     * @param string|array $lockFieldNames The name of the field(s) you want to lock.
+     * @return ActiveQuery
+     * Returns instance of ActiveQuery.
+    */
+    public function lockDocuments($lockFieldNames)
+    {
+        static::getDb()->transactionReady('lock documents');
+        $attributes = [];
+        foreach (is_array($lockFieldNames) ? $lockFieldNames : [$lockFieldNames] as $field) {
+            $attributes[$field] = new ObjectId;
+        }
+
+        static::updateAll($attributes,$this->where);
+
+        return $this;
+    }
+
+    /**
      * Returns the Mongo collection for this query.
      * @param Connection $db Mongo connection.
      * @return Collection collection instance.
