@@ -230,13 +230,13 @@ class ActiveQuery extends Query implements ActiveQueryInterface
     */
     public function lockDocuments($lockFieldNames)
     {
-        static::getDb()->transactionReady('lock documents');
+        $this::getDb()->transactionReady('lock documents');
         $attributes = [];
         foreach (is_array($lockFieldNames) ? $lockFieldNames : [$lockFieldNames] as $field) {
             $attributes[$field] = new ObjectId;
         }
 
-        static::updateAll($attributes,$this->where);
+        $this::updateAll($attributes,$this->where);
 
         return $this;
     }
