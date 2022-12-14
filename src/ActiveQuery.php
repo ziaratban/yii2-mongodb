@@ -236,7 +236,7 @@ class ActiveQuery extends Query implements ActiveQueryInterface
             $attributes[$field] = new ObjectId;
         }
 
-        $this::updateAll($attributes,$this->where);
+        ($this->modelClass)::updateAll($attributes,$this->where);
 
         return $this;
     }
