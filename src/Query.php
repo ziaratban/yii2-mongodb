@@ -7,6 +7,7 @@
 
 namespace yii\mongodb;
 
+use MongoDB\BSON\ObjectId;
 use yii\base\Component;
 use yii\db\QueryInterface;
 use yii\db\QueryTrait;
@@ -341,7 +342,11 @@ class Query extends Component implements QueryInterface
         }
         $result = [];
         foreach ($rows as $row) {
-            $result[ArrayHelper::getValue($row, $this->indexBy)] = $row;
+            $key = ArrayHelper::getValue($row, $this->indexBy);
+            if ($key instanceof ObjectID) {
+                $key = (string)$key;
+            }
+            $result[$key] = $row;
         }
         return $result;
     }
