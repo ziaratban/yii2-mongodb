@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yii\mongodb;
@@ -28,8 +28,7 @@ use Yii;
  *
  * To perform "find" queries, please use [[Query]] instead.
  *
- * @property string $fullName Full name of this collection, including database name. This property is
- * read-only.
+ * @property-read string $fullName Full name of this collection, including database name.
  *
  * @author Paul Klimov <klimov.paul@gmail.com>
  * @since 2.0
@@ -248,6 +247,17 @@ class Collection extends BaseObject
         $cursor = $this->find($condition, $fields, $options, $execOptions);
         $rows = $cursor->toArray();
         return empty($rows) ? null : current($rows);
+    }
+
+    /**
+     * Returns if a document exists.
+     * @param array $condition Query condition.
+     * @return bool
+     * @since 2.0.39
+     */
+    public function documentExists($condition = [])
+    {
+        return static::findOne($condition, ['_id' => 1]) !== null;
     }
 
     /**

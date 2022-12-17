@@ -1,8 +1,8 @@
 <?php
 /**
- * @link http://www.yiiframework.com/
+ * @link https://www.yiiframework.com/
  * @copyright Copyright (c) 2008 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license https://www.yiiframework.com/license/
  */
 
 namespace yii\mongodb;
@@ -296,7 +296,7 @@ class QueryBuilder extends BaseObject
     /**
      * Generates 'group' command.
      * @param string $collectionName
-     * @@param mixed $keys fields to group by. If an array or non-code object is passed,
+     * @param mixed $keys fields to group by. If an array or non-code object is passed,
      * it will be the key used to group results. If instance of [[Javascript]] passed,
      * it will be treated as a function that returns the key to group by.
      * @param array $initial Initial value of the aggregation counter object.
