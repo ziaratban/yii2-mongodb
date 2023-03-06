@@ -435,28 +435,9 @@ class Query extends Component implements QueryInterface
             $this->select[] = $this->indexBy;
         }
 
-        $rows = $this->fetchRows(true, $db);
-
-        if (empty($rows)) {
-            return [];
-        }
-
-        $results = [];
-        foreach ($rows as $row) {
-            $value = reset($row);
-
-            if ($this->indexBy === null) {
-                $results[] = $value;
-            } else {
-                if ($this->indexBy instanceof \Closure) {
-                    $results[call_user_func($this->indexBy, $row)] = $value;
-                } else {
-                    $results[$row[$this->indexBy]] = $value;
-                }
-            }
-        }
-
-        return $results;
+        $cursor = $this->buildCursor($db);
+        $rows = $this->fetchRows($cursor, true);
+        return $this->populate($rows);
     }
 
     /**
