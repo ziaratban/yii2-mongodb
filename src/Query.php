@@ -431,12 +431,13 @@ class Query extends Component implements QueryInterface
         if (!isset($originSelect['_id']) && array_search('_id', $originSelect, true) === false) {
             $this->select['_id'] = false;
         }
+
         if (is_string($this->indexBy) && $originSelect && count($originSelect) === 1) {
             $this->select[] = $this->indexBy;
         }
 
         $cursor = $this->buildCursor($db);
-        $rows = $this->fetchRows($cursor, true);
+        $rows = $this->fetchRows(true,$db);
         return $this->populate($rows);
     }
 
