@@ -438,7 +438,11 @@ class Query extends Component implements QueryInterface
 
         $this->asArray();
         $rows = $this->fetchRows(true,$db);
-        return array_values($this->populate($rows));
+        $result = [];
+        foreach($this->populate($rows) as $row) {
+            $result[] = reset($row);
+        }
+        return $result;
     }
 
     /**
