@@ -436,6 +436,7 @@ class Query extends Component implements QueryInterface
             $this->select[] = $this->indexBy;
         }
 
+        $this->asArray();
         $rows = $this->fetchRows(true,$db);
         return array_values($this->populate($rows));
     }
