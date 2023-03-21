@@ -206,8 +206,13 @@ class ActiveQuery extends Query implements ActiveQueryInterface
         $modifyOptions['new'] = true;
 
         $set = [];
-        foreach ($lockFieldNames as $field) {
-            $set[$field] = new ObjectId;
+        foreach ($lockFieldNames as $key => $value) {
+            if(is_string($value)) {
+                $set[$value] = new ObjectId;
+            }
+            else {
+                $set[$key] = $value;
+            }
         }
 
         return 
@@ -232,8 +237,13 @@ class ActiveQuery extends Query implements ActiveQueryInterface
     {
         $this::getDb()->transactionReady('lock documents');
         $attributes = [];
-        foreach (is_array($lockFieldNames) ? $lockFieldNames : [$lockFieldNames] as $field) {
-            $attributes[$field] = new ObjectId;
+        foreach (is_array($lockFieldNames) ? $lockFieldNames : [$lockFieldNames] as $key => $value) {
+            if(is_string($value)) {
+                $attributes[$value] = new ObjectId;
+            }
+            else {
+                $attributes[$key] = $value;
+            }
         }
 
         ($this->modelClass)::updateAll($attributes,empty($this->where) ? [] : $this->where);
