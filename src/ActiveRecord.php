@@ -536,7 +536,7 @@ abstract class ActiveRecord extends BaseActiveRecord
         $set = [];
         foreach (is_array($lockFieldNames) ? $lockFieldNames : [$lockFieldNames] as $key => $value) {
             if(is_string($value)) {
-                $set[$value] = new ObjectId;
+                $set["_$value"] = new ObjectId;
             }
             else {
                 $set[$key] = $value;

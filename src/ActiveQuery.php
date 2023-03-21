@@ -195,7 +195,7 @@ class ActiveQuery extends Query implements ActiveQueryInterface
         $set = [];
         foreach ($lockFieldNames as $key => $value) {
             if(is_string($value)) {
-                $set[$value] = new ObjectId;
+                $set["_$value"] = new ObjectId;
             }
             else {
                 $set[$key] = $value;
@@ -226,7 +226,7 @@ class ActiveQuery extends Query implements ActiveQueryInterface
         $attributes = [];
         foreach (is_array($lockFieldNames) ? $lockFieldNames : [$lockFieldNames] as $key => $value) {
             if(is_string($value)) {
-                $attributes[$value] = new ObjectId;
+                $attributes["_$value"] = new ObjectId;
             }
             else {
                 $attributes[$key] = $value;
