@@ -534,6 +534,19 @@ class Connection extends Component
     }
 
     /**
+     * Only starts the new transaction in new session for the current connection but this session does not set for current connection.
+     * @param array $sessionOptions see doc of ClientSession::start()
+     * @param array $transactionOptions see doc of Transaction::start()
+     * return ClientSession
+     */
+    public function newTransaction($sessionOptions = [], $transactionOptions = [])
+    {
+        $transaction = $this->newSession($sessionOptions)->transaction;
+        $transaction->start($transactionOptions);
+        return $transaction;
+    }
+
+    /**
      * Checks whether the current connection is in session.
      * return bool
     */
