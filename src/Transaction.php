@@ -140,20 +140,23 @@ class Transaction extends \yii\base\BaseObject
         $this->clientSession->db->trigger(Connection::EVENT_ROLLBACK_TRANSACTION);
     }
 
-    public function run($callback, $throw = true){
+    public function run($query, $throw = true){
         $lastMongoSession = Yii::$app->mongodb->getSession();
-        try{
+        try {
             if(!$this->clientSession->getInTransaction())
                 $this->start();
             Yii::$app->mongodb->setSession($this->clientSession);
-            return $callback();
+            return $query();
         }
-        catch(\Exception|\Error $e){
+        catch(\Exception|\Error $e) {
             if($throw)
                 throw $e;
+            if(!YII_ENV_PROD) {
+                yii::error($e);
+            }
             return false;
         }
-        finally{
+        finally {
             Yii::$app->mongodb->setSession($lastMongoSession);
         }
     }
