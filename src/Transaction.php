@@ -130,17 +130,21 @@ class Transaction extends \yii\base\BaseObject
     /**
      * safe commit a transaction.
      * @see https://www.php.net/manual/en/mongodb-driver-session.committransaction.php
+     * @return bool returns true when this transaction is committed.
      */
     public function safeCommit()
     {
         $this->yiiDebug('Committing mongodb transaction in safe mode ...', __METHOD__);
         try {
             $this->clientSession->mongoSession->commitTransaction();
+            $this->yiiEndProfile('mongodb > start transaction(session id => ' . $this->clientSession->getId() . ')');
+            $this->yiiDebug('Commit mongodb transaction.', __METHOD__);
+            $this->clientSession->db->trigger(Connection::EVENT_COMMIT_TRANSACTION);
+            return true;
         }
-        catch(\Exception|\Error) {}
-        $this->yiiEndProfile('mongodb > start transaction(session id => ' . $this->clientSession->getId() . ')');
-        $this->yiiDebug('Commit mongodb transaction.', __METHOD__);
-        $this->clientSession->db->trigger(Connection::EVENT_COMMIT_TRANSACTION);
+        catch(\Exception|\Error) {
+            return false;
+        }
     }
 
     /**
@@ -159,17 +163,21 @@ class Transaction extends \yii\base\BaseObject
     /**
      * Safe rolls back a transaction.
      * @see https://www.php.net/manual/en/mongodb-driver-session.aborttransaction.php
+     * @return bool returns true when this transaction is rolled back.
      */
     public function safeRollBack()
     {
         $this->yiiDebug('Rolling back mongodb transaction ...', __METHOD__);
         try {
             $this->clientSession->mongoSession->abortTransaction();
+            $this->yiiEndProfile('mongodb > start transaction(session id => ' . $this->clientSession->getId() . ')');
+            $this->yiiDebug('Roll back mongodb transaction.', __METHOD__);
+            $this->clientSession->db->trigger(Connection::EVENT_ROLLBACK_TRANSACTION);
+            return true;
         }
-        catch(\Exception|\Error) {}
-        $this->yiiEndProfile('mongodb > start transaction(session id => ' . $this->clientSession->getId() . ')');
-        $this->yiiDebug('Roll back mongodb transaction.', __METHOD__);
-        $this->clientSession->db->trigger(Connection::EVENT_ROLLBACK_TRANSACTION);
+        catch(\Exception|\Error) {
+            return false;
+        }
     }
 
     public function run($query, $throw = true){
