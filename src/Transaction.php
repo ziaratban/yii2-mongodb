@@ -128,6 +128,22 @@ class Transaction extends \yii\base\BaseObject
     }
 
     /**
+     * safe commit a transaction.
+     * @see https://www.php.net/manual/en/mongodb-driver-session.committransaction.php
+     */
+    public function safeCommit()
+    {
+        $this->yiiDebug('Committing mongodb transaction in safe mode ...', __METHOD__);
+        try {
+            $this->clientSession->mongoSession->commitTransaction();
+        }
+        catch(\Exception|\Error) {}
+        $this->yiiEndProfile('mongodb > start transaction(session id => ' . $this->clientSession->getId() . ')');
+        $this->yiiDebug('Commit mongodb transaction.', __METHOD__);
+        $this->clientSession->db->trigger(Connection::EVENT_COMMIT_TRANSACTION);
+    }
+
+    /**
      * Rolls back a transaction.
      * @see https://www.php.net/manual/en/mongodb-driver-session.aborttransaction.php
      */
@@ -135,6 +151,22 @@ class Transaction extends \yii\base\BaseObject
     {
         $this->yiiDebug('Rolling back mongodb transaction ...', __METHOD__);
         $this->clientSession->mongoSession->abortTransaction();
+        $this->yiiEndProfile('mongodb > start transaction(session id => ' . $this->clientSession->getId() . ')');
+        $this->yiiDebug('Roll back mongodb transaction.', __METHOD__);
+        $this->clientSession->db->trigger(Connection::EVENT_ROLLBACK_TRANSACTION);
+    }
+
+    /**
+     * Safe rolls back a transaction.
+     * @see https://www.php.net/manual/en/mongodb-driver-session.aborttransaction.php
+     */
+    public function safeRollBack()
+    {
+        $this->yiiDebug('Rolling back mongodb transaction ...', __METHOD__);
+        try {
+            $this->clientSession->mongoSession->abortTransaction();
+        }
+        catch(\Exception|\Error) {}
         $this->yiiEndProfile('mongodb > start transaction(session id => ' . $this->clientSession->getId() . ')');
         $this->yiiDebug('Roll back mongodb transaction.', __METHOD__);
         $this->clientSession->db->trigger(Connection::EVENT_ROLLBACK_TRANSACTION);
