@@ -143,7 +143,7 @@ class Transaction extends \yii\base\BaseObject
      * @see https://www.php.net/manual/en/mongodb-driver-session.committransaction.php
      * @return bool returns true when this transaction is committed.
      */
-    public function safeCommit()
+    public function safeCommit(&$exception = null)
     {
         $this->yiiDebug('Committing mongodb transaction in safe mode ...', __METHOD__);
         try {
@@ -153,7 +153,8 @@ class Transaction extends \yii\base\BaseObject
             $this->clientSession->db->trigger(Connection::EVENT_COMMIT_TRANSACTION);
             return true;
         }
-        catch(\Exception|\Error) {
+        catch(\Exception|\Error $e) {
+            $exception = $e;
             return false;
         }
     }
@@ -176,7 +177,7 @@ class Transaction extends \yii\base\BaseObject
      * @see https://www.php.net/manual/en/mongodb-driver-session.aborttransaction.php
      * @return bool returns true when this transaction is rolled back.
      */
-    public function safeRollBack()
+    public function safeRollBack(&$exception = null)
     {
         $this->yiiDebug('Rolling back mongodb transaction ...', __METHOD__);
         try {
@@ -186,7 +187,8 @@ class Transaction extends \yii\base\BaseObject
             $this->clientSession->db->trigger(Connection::EVENT_ROLLBACK_TRANSACTION);
             return true;
         }
-        catch(\Exception|\Error) {
+        catch(\Exception|\Error $e) {
+            $exception = $e;
             return false;
         }
     }
