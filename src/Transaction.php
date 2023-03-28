@@ -42,6 +42,11 @@ class Transaction extends \yii\base\BaseObject
      */
     public $clientSession;
 
+    /**
+     * @var mixed your custom data
+     */
+    public $data;
+
 
     /**
      * Set debug message if `enableLogging` property is enable in yii\mongodb\Connection
