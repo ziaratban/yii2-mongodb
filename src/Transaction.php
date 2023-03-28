@@ -40,6 +40,11 @@ class Transaction extends \yii\base\BaseObject
     public $clientSession;
 
     /**
+     * @var Exception|Error the last exception or error thrown that occurred during the call to the run() method
+     */
+    public $lastRunError;
+
+    /**
      * @var mixed your custom data
      */
     public $data;
@@ -195,6 +200,7 @@ class Transaction extends \yii\base\BaseObject
             return $query();
         }
         catch(\Exception|\Error $e) {
+            $this->lastRunError = $e;
             if($throw)
                 throw $e;
             if(!YII_ENV_PROD) {
