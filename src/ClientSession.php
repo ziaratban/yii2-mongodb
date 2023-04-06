@@ -135,7 +135,7 @@ class ClientSession extends \yii\base\BaseObject
             Yii::debug('Starting mongodb session ...', __METHOD__);
         }
         $db->trigger(Connection::EVENT_START_SESSION);
-        $db->manager->open();
+        $db->open();
         $newSession = new self([
             'db' => $db,
             'mongoSession' => $db->manager->startSession($sessionOptions),
