@@ -194,24 +194,25 @@ class Transaction extends \yii\base\BaseObject
     }
 
     public function run($query, $throw = true){
-        $lastMongoSession = Yii::$app->mongodb->getSession();
+        $lastMongoSession = $this->clientSession->db->getSession();
         try {
             if(!$this->clientSession->getInTransaction())
                 $this->start();
-            Yii::$app->mongodb->setSession($this->clientSession);
+            $this->clientSession->db->setSession($this->clientSession);
             return $query();
         }
         catch(\Exception|\Error $e) {
             $this->lastRunError = $e;
-            if($throw)
-                throw $e;
             if(!YII_ENV_PROD) {
                 yii::error($e);
+            }
+            if($throw) {
+                throw $e;
             }
             return false;
         }
         finally {
-            Yii::$app->mongodb->setSession($lastMongoSession);
+            $this->clientSession->db->setSession($lastMongoSession);
         }
     }
 }
