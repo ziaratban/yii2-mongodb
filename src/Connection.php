@@ -455,7 +455,6 @@ class Connection extends Component
             'db' => $this,
             'databaseName' => $databaseName,
             'document' => $document,
-            'globalExecOptions' => $this->globalExecOptions
         ]);
     }
 

@@ -74,18 +74,13 @@ class Command extends BaseObject
     public $document = [];
 
     /**
-    * @var array default options for `executeCommand` method of MongoDB\Driver\Manager.
-    */
-    public $globalExecOptions = [];
-
-    /**
     * prepares execOptions for some purposes
     * @param array|object|null $execOptions {@see prepareManagerOptions()}
     */
     private function prepareExecCommandOptions(&$execOptions)
     {
         if (empty($execOptions)) {
-            $execOptions = array_merge($this->globalExecOptions['command'],$this->globalExecOptions['share']);
+            $execOptions = array_merge($this->db->globalExecOptions['command'],$this->db->globalExecOptions['share']);
         }
         self::prepareManagerOptions($execOptions);
     }
@@ -97,7 +92,7 @@ class Command extends BaseObject
     private function prepareExecBulkWriteOptions(&$execOptions)
     {
         if (empty($execOptions)) {
-            $execOptions = array_merge($this->globalExecOptions['bulkWrite'],$this->globalExecOptions['share']);
+            $execOptions = array_merge($this->db->globalExecOptions['bulkWrite'],$this->db->globalExecOptions['share']);
         }
         self::prepareManagerOptions($execOptions);
     }
@@ -109,7 +104,7 @@ class Command extends BaseObject
     private function prepareExecQueryOptions(&$execOptions)
     {
         if (empty($execOptions)) {
-            $execOptions = array_merge($this->globalExecOptions['query'],$this->globalExecOptions['share']);
+            $execOptions = array_merge($this->db->globalExecOptions['query'],$this->db->globalExecOptions['share']);
         }
         self::prepareManagerOptions($execOptions);
     }
