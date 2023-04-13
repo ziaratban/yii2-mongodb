@@ -416,6 +416,26 @@ abstract class ActiveRecord extends BaseActiveRecord
         return $result;
     }
 
+    private function getUnsetAttributes($values)
+    {
+        $document = $values;
+        if (!empty($this->unsetAttrs)) {
+            foreach ($this->unsetAttrs as $attr => $_) {
+                unset($document[$attr],$values[$attr],$this->$attr);
+            }
+            if (empty($document)) {
+                $document = ['$unset' => $this->unsetAttrs];
+            } else {
+                $document = [
+                    '$set' => $document,
+                    '$unset' => $this->unsetAttrs,
+                ];
+            }
+            $this->unsetAttrs = [];
+        }
+        return $document;
+    }
+
     /**
      * @see ActiveRecord::update()
      * @throws StaleObjectException
@@ -439,21 +459,7 @@ abstract class ActiveRecord extends BaseActiveRecord
             $condition[$lock] = $this->$lock;
         }
 
-        $document = $values;
-        if (!empty($this->unsetAttrs)) {
-            foreach ($this->unsetAttrs as $attr => $_) {
-                unset($document[$attr],$values[$attr],$this->$attr);
-            }
-            if (empty($document)) {
-                $document = ['$unset' => $this->unsetAttrs];
-            } else {
-                $document = [
-                    '$set' => $document,
-                    '$unset' => $this->unsetAttrs,
-                ];
-            }
-            $this->unsetAttrs = [];
-        }
+        $document = $this->getUnsetAttributes($values);
         // We do not check the return value of update() because it's possible
         // that it doesn't change anything and thus returns 0.
         $rows = static::getCollection()->update($condition, $document);
@@ -731,11 +737,12 @@ abstract class ActiveRecord extends BaseActiveRecord
     public function batchUpdate($attributes = null){
         self::batchUpdateInit();
         $values = $this->getDirtyAttributes($attributes);
-        if (empty($values))
+        $document = $this->getUnsetAttributes($values);
+        if (empty($document))
            return;
         $condition = $this->getOldPrimaryKey(true);
         $className = static::className();
-        self::$batchUpdateCommand[$className]->addUpdate($condition, $values);
+        self::$batchUpdateCommand[$className]->addUpdate($condition, $document);
         self::$batchUpdateQueue[$className]++;
         if(self::$batchUpdateQueue[$className] >= static::$batchUpdateSize)
             return self::flushBatchUpdate();
