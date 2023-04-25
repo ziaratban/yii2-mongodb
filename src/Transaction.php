@@ -193,7 +193,7 @@ class Transaction extends \yii\base\BaseObject
         }
     }
 
-    public function run($query, $throw = true){
+    public function run($query, $throw = true, $log = false){
         $lastMongoSession = $this->clientSession->db->getSession();
         try {
             if(!$this->clientSession->getInTransaction())
@@ -203,8 +203,8 @@ class Transaction extends \yii\base\BaseObject
         }
         catch(\Exception|\Error $e) {
             $this->lastRunError = $e;
-            if(!YII_ENV_PROD) {
-                yii::error($e);
+            if(!YII_ENV_PROD || $log) {
+                Yii::error($e);
             }
             if($throw) {
                 throw $e;
