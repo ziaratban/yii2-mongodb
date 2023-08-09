@@ -196,7 +196,7 @@ class Transaction extends \yii\base\BaseObject
         }
     }
 
-    public function run($query, $throw = true, $log = false){
+    public function run($query, $throw = false, $log = false){
         $lastMongoSession = $this->clientSession->db->getSession();
         try {
             if(!$this->clientSession->getInTransaction())
