@@ -153,7 +153,7 @@ class Transaction extends \yii\base\BaseObject
             $this->clientSession->db->trigger(Connection::EVENT_COMMIT_TRANSACTION);
             return true;
         }
-        catch(\Exception|\Error $e) {
+        catch(\Throwable $e) {
             $exception = $e;
             return false;
         }
@@ -187,7 +187,7 @@ class Transaction extends \yii\base\BaseObject
             $this->clientSession->db->trigger(Connection::EVENT_ROLLBACK_TRANSACTION);
             return true;
         }
-        catch(\Exception|\Error $e) {
+        catch(\Throwable $e) {
             $exception = $e;
             return false;
         }
@@ -201,7 +201,7 @@ class Transaction extends \yii\base\BaseObject
             $this->clientSession->db->setSession($this->clientSession);
             return $query();
         }
-        catch(\Exception|\Error $e) {
+        catch(\Throwable $e) {
             $this->lastRunError = $e;
             if(!YII_ENV_PROD || $log) {
                 Yii::error($e);
