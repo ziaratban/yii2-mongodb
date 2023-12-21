@@ -40,6 +40,10 @@ abstract class ActiveRecord extends BaseActiveRecord
      * @var int size of batch for insert operations
     */
     public  static $batchInsertSize = 500;
+    /*
+     * @var bool register_shutdown_function is set?
+    */
+    public  static $batchInsertShutdownFunction = false;
 
     /*
      * @var Command instance of Command class for batch update.
@@ -53,6 +57,10 @@ abstract class ActiveRecord extends BaseActiveRecord
      * @var int size of batch for update operations
     */
     public  static $batchUpdateSize = 500;
+    /*
+     * @var bool register_shutdown_function is set?
+    */
+    public  static $batchUpdateShutdownFunction = false;
 
     /*
      * @var Command instance of Command class for batch delete.
@@ -66,6 +74,10 @@ abstract class ActiveRecord extends BaseActiveRecord
      * @var int size of batch for delete operations
     */
     public  static $batchDeleteSize = 500;
+    /*
+     * @var bool register_shutdown_function is set?
+    */
+    public  static $batchDeleteShutdownFunction = false;
 
     /**
      * The insert operation. This is mainly used when overriding [[transactions()]] to specify which operations are transactional.
@@ -640,11 +652,17 @@ abstract class ActiveRecord extends BaseActiveRecord
 
         self::$batchInsertQueue[$className][$scope] = 0;
         self::$batchInsertCommand[$className][$scope] = static::getDb()->createCommand();
-        if(self::$batchInsertCommand[$className][$scope]->db->enableLogging)
+        if(
+            !self::$batchInsertShutdownFunction &&
+            self::$batchInsertCommand[$className][$scope]->db->enableLogging
+        )
+        {
+            self::$batchInsertShutdownFunction = true;
             register_shutdown_function(function()use($scope){
                 if(self::hasBatchInsert($scope))
                     yii::warning(static::className().' : batch insert mode not completed!');
             });
+        }
     }
 
     /**
@@ -721,11 +739,17 @@ abstract class ActiveRecord extends BaseActiveRecord
 
         self::$batchUpdateQueue[$className][$scope] = 0;
         self::$batchUpdateCommand[$className][$scope] = static::getDb()->createCommand();
-        if(self::$batchUpdateCommand[$className][$scope]->db->enableLogging)
+        if(
+            !self::$batchUpdateShutdownFunction &&
+            self::$batchUpdateCommand[$className][$scope]->db->enableLogging
+        )
+        {
+            self::$batchUpdateShutdownFunction = true;
             register_shutdown_function(function()use($scope){
                 if(self::hasBatchUpdate($scope))
                     yii::warning(static::className().' : batch update mode not completed!');
             });
+        }
     }
 
     /**
@@ -816,11 +840,17 @@ abstract class ActiveRecord extends BaseActiveRecord
 
         self::$batchDeleteQueue[$className][$scope] = 0;
         self::$batchDeleteCommand[$className][$scope] = static::getDb()->createCommand();
-        if(self::$batchDeleteCommand[$className][$scope]->db->enableLogging)
+        if(
+            !self::$batchDeleteShutdownFunction &&
+            self::$batchDeleteCommand[$className][$scope]->db->enableLogging
+        )
+        {
+            self::$batchDeleteShutdownFunction = true;
             register_shutdown_function(function()use($scope){
                 if(self::hasBatchDelete($scope))
                     yii::warning(static::className().' : batch delete mode not completed!');
             });
+        }
     }
 
     /**
