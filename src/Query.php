@@ -505,17 +505,14 @@ class Query extends Component implements QueryInterface
          * https://blog.serverdensity.com/checking-if-a-document-exists-mongodb-slow-findone-vs-find/
          */
         #save last options
-        $tmpOrderBy = $this->orderBy;
         $tmpLimit = $this->limit;
         $tmpOffset = $this->offset;
         $tmpSelect = $this->select;
-        $this->orderBy = [];
         $this->limit = 1;
         $this->offset = null;
         $this->select = ['_id'];
         $cursor = $this->buildCursor($db);
         #return last options
-        $this->orderBy = $tmpOrderBy;
         $this->limit = $tmpLimit;
         $this->offset = $tmpOffset;
         $this->select = $tmpSelect;
