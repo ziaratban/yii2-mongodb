@@ -232,7 +232,8 @@ class Command extends BaseObject
 
             $this->db->open();
             $writeResult = $this->db->manager->executeBulkWrite($databaseName . '.' . $collectionName, $batch, $execOptions);
-
+            var_dump($operation);
+            var_dump($writeResult);
             $this->endProfile($token, __METHOD__);
         } catch (RuntimeException $e) {
             $this->endProfile($token, __METHOD__);

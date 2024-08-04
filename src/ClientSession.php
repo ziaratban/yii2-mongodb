@@ -63,6 +63,10 @@ class ClientSession extends \yii\base\BaseObject
     *   ],
     * ]
     */
+
+    private $end = false;
+
+
     public static function prepareOptions(&$options)
     {
         if (array_key_exists('defaultTransactionOptions', $options)) {
@@ -155,6 +159,25 @@ class ClientSession extends \yii\base\BaseObject
     }
 
     /**
+     * Returns true if the session is in end
+     * @return bool
+    */
+    public function getIsEnd()
+    {
+        if($this->end)
+            return true;
+        try
+        {
+            $this->mongoSession->getOperationTime();
+            return true;
+        }
+        catch(\Throwable)
+        {
+            return false;
+        }
+    }
+
+    /**
      * Returns true if the transaction is in progress
      * @return bool
     */
@@ -169,6 +192,7 @@ class ClientSession extends \yii\base\BaseObject
     public function end()
     {
         $this->mongoSession->endSession();
+        $this->end = true;
         $this->db->trigger(Connection::EVENT_END_SESSION);
     }
 }
