@@ -168,10 +168,10 @@ class ClientSession extends \yii\base\BaseObject
             return true;
         try
         {
-            $this->mongoSession->getOperationTime();
-            return true;
+            $this->mongoSession->isDirty();
+            return false;
         }
-        catch(\Throwable)
+        catch(\Throwable $e)
         {
             return false;
         }
