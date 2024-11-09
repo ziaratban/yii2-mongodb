@@ -206,7 +206,7 @@ class Transaction extends \yii\base\BaseObject
             if(!YII_ENV_PROD || $log) {
                 Yii::error($e);
             }
-            if($throw) {
+            if(!YII_ENV_PROD || $throw) {
                 throw $e;
             }
             return false;
