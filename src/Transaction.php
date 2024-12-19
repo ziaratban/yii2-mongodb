@@ -199,11 +199,12 @@ class Transaction extends \yii\base\BaseObject
             if(!$this->clientSession->getInTransaction())
                 $this->start();
             $this->clientSession->db->setSession($this->clientSession);
-            if($query()) {
-                if($commit) {
-                    return $this->safeCommit();
+            if($output = $query())
+            {
+                if($commit){
+                    return $this->safeCommit() ? $output : false;
                 }
-                return true;
+                return $output;
             }
             return false;
         }
