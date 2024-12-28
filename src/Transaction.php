@@ -224,7 +224,8 @@ class Transaction extends \yii\base\BaseObject
             if($output = $query())
             {
                 if($commit){
-                    return $this->safeCommit() ? $output : false;
+                    $this->commit();
+                    return $output;
                 }
                 return $output;
             }
