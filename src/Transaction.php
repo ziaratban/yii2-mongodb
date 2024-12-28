@@ -193,7 +193,14 @@ class Transaction extends \yii\base\BaseObject
         }
     }
 
-    public function run($query, $throw = true, $log = false, $commit = false){
+    public function run($query, $throw = true, $log = false, $commit = false, $queue = false){
+        static $queries = [];
+
+        if($queries){
+            $queries[] = $query;
+            return;
+        }
+
         $lastMongoSession = $this->clientSession->db->getSession();
         try {
             if(!$this->clientSession->getInTransaction())
@@ -201,6 +208,11 @@ class Transaction extends \yii\base\BaseObject
             $this->clientSession->db->setSession($this->clientSession);
             if($output = $query())
             {
+                foreach($queries as $_query){
+                    $_query();
+                }
+                $queries = [];
+
                 if($commit){
                     return $this->safeCommit() ? $output : false;
                 }
