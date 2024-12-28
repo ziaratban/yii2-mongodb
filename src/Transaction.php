@@ -50,6 +50,8 @@ class Transaction extends \yii\base\BaseObject
     public $data;
 
 
+    private $queue = [];
+
     /**
      * Set debug message if `enableLogging` property is enable in yii\mongodb\Connection
      * @var string $message please see $this->yiiDebug()
@@ -194,10 +196,9 @@ class Transaction extends \yii\base\BaseObject
     }
 
     public function run($query, $throw = true, $log = false, $commit = false, $queue = false){
-        static $queries = [];
 
-        if($queries){
-            $queries[] = $query;
+        if($queue){
+            $this->queue[] = $query;
             return;
         }
 
@@ -208,10 +209,10 @@ class Transaction extends \yii\base\BaseObject
             $this->clientSession->db->setSession($this->clientSession);
             if($output = $query())
             {
-                foreach($queries as $_query){
+                foreach($this->queue as $_query){
                     $_query();
                 }
-                $queries = [];
+                $this->queue = [];
 
                 if($commit){
                     return $this->safeCommit() ? $output : false;
