@@ -88,6 +88,15 @@ class Transaction extends \yii\base\BaseObject
         }
     }
 
+    protected function runQueue() {
+        if($this->queue) {
+            foreach($this->queue as $_query){
+                $_query();
+            }
+            $this->queue = [];
+        }
+    }
+
     /**
      * Returns the transaction state.
      */
@@ -133,8 +142,7 @@ class Transaction extends \yii\base\BaseObject
      */
     public function commit()
     {
-        $this->queue = [];
-
+        $this->runQueue();
         $this->yiiDebug('Committing mongodb transaction ...', __METHOD__);
         $this->clientSession->mongoSession->commitTransaction();
         $this->yiiEndProfile('mongodb > start transaction(session id => ' . $this->clientSession->getId() . ')');
@@ -149,8 +157,7 @@ class Transaction extends \yii\base\BaseObject
      */
     public function safeCommit(&$exception = null)
     {
-        $this->queue = [];
-
+        $this->runQueue();
         $this->yiiDebug('Committing mongodb transaction in safe mode ...', __METHOD__);
         try {
             $this->clientSession->mongoSession->commitTransaction();
@@ -188,7 +195,6 @@ class Transaction extends \yii\base\BaseObject
     public function safeRollBack(&$exception = null)
     {
         $this->queue = [];
-
         $this->yiiDebug('Rolling back mongodb transaction ...', __METHOD__);
         try {
             $this->clientSession->mongoSession->abortTransaction();
@@ -217,14 +223,6 @@ class Transaction extends \yii\base\BaseObject
             $this->clientSession->db->setSession($this->clientSession);
             if($output = $query())
             {
-                if($queue === 'run')
-                {
-                    foreach($this->queue as $_query){
-                        $_query();
-                    }
-                    $this->queue = [];
-                }
-
                 if($commit){
                     return $this->safeCommit() ? $output : false;
                 }
