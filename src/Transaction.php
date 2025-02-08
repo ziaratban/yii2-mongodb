@@ -209,7 +209,7 @@ class Transaction extends \yii\base\BaseObject
         }
     }
 
-    public function run($query, $throw = false, $log = false, $commit = false, $queue = false){
+    public function run($query, $throw = false, $log = true, $commit = false, $queue = false){
 
         if($queue === true){
             $this->queue[] = $query;
