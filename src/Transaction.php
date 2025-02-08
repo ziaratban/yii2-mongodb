@@ -209,7 +209,7 @@ class Transaction extends \yii\base\BaseObject
         }
     }
 
-    public function run($query, $throw = false, $log = true, $commit = false, $queue = false){
+    public function run($query, $throw = false, $log = true, $commit = false, $queue = false, $logExceptions = []){
 
         if($queue === true){
             $this->queue[] = $query;
@@ -233,9 +233,24 @@ class Transaction extends \yii\base\BaseObject
         }
         catch(\Throwable $e) {
             $this->lastRunError = $e;
+
             if(!YII_ENV_PROD || $log) {
-                Yii::error($e);
+                $log = true;
+
+                foreach($logExceptions as $logExceptionClass => $messagePattern){
+                    if(
+                        $e instanceof $logExceptionClass
+                        &&
+                        preg_match($messagePattern, $e->GetMessage(), $_) === 1
+                    ){
+                        $log = false;
+                    }
+                }
+
+                if($log)
+                    Yii::error($e);
             }
+
             if(!YII_ENV_PROD || $throw) {
                 throw $e;
             }
