@@ -237,13 +237,22 @@ class Transaction extends \yii\base\BaseObject
             if(!YII_ENV_PROD || $log) {
                 $log = true;
 
-                foreach($logExceptions as $logExceptionClass => $messagePattern){
+                foreach($logExceptions as $exceptionClass => $condition){
                     if(
-                        $e instanceof $logExceptionClass
-                        &&
-                        preg_match($messagePattern, $e->GetMessage(), $_) === 1
+                        is_string($exceptionClass) ? $e instanceof $exceptionClass : true
                     ){
-                        $log = false;
+                        if(is_callable($condition)){
+                            $log = !$condition($e);
+                            break;
+                        }
+                        elseif(
+                            !is_int($exceptionClass)
+                            &&
+                            is_string($condition) && preg_match($condition, $e->GetMessage(), $_) === 1)
+                        {
+                            $log = false;
+                            break;
+                        }
                     }
                 }
 
