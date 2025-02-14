@@ -238,21 +238,28 @@ class Transaction extends \yii\base\BaseObject
                 $log = true;
 
                 foreach($logExceptions as $exceptionClass => $condition){
-                    if(
-                        is_string($exceptionClass) ? $e instanceof $exceptionClass : true
-                    ){
-                        if(is_callable($condition)){
-                            $log = !$condition($e);
-                            break;
+                    if(is_string($exceptionClass)){
+                        if($e instanceof $exceptionClass){
+                            if(is_callable($condition) && $condition($e)){
+                                $log = false;
+                                break;    
+                            }
+
+                            elseif(preg_match($condition, $e->GetMessage(), $_) === 1){
+                                $log = false;
+                                break;
+                            }
                         }
-                        elseif(
-                            !is_int($exceptionClass)
-                            &&
-                            is_string($condition) && preg_match($condition, $e->GetMessage(), $_) === 1)
-                        {
+                    }
+                    elseif(is_string($condition)){
+                        if($e instanceof $condition){
                             $log = false;
                             break;
                         }
+                    }
+                    elseif(is_callable($condition) && $condition($e)){
+                        $log = false;
+                        break;
                     }
                 }
 
