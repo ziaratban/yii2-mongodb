@@ -260,7 +260,10 @@ class QueryBuilder extends BaseObject
         }
 
         foreach (['fields', 'query', 'sort', 'update'] as $name) {
-            if (isset($options[$name])) {
+            if($name === 'update')
+                $document['update'] = $options[$name];
+
+            elseif (isset($options[$name])) {
                 $document[$name] = (object) $options[$name];
             }
         }
