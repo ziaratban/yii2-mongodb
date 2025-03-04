@@ -240,12 +240,16 @@ class Transaction extends \yii\base\BaseObject
                 foreach($logExceptions as $exceptionClass => $condition){
                     if(is_string($exceptionClass)){
                         if($e instanceof $exceptionClass){
-                            if(is_callable($condition) && $condition($e)){
-                                $log = false;
-                                break;    
+                            if(is_callable($condition)){
+                                if($condition($e))
+                                {
+                                    $log = false;
+                                    break;    
+                                }
                             }
 
-                            elseif(preg_match($condition, $e->GetMessage(), $_) === 1){
+                            elseif(preg_match($condition, $e->GetMessage(), $_) === 1)
+                            {
                                 $log = false;
                                 break;
                             }
