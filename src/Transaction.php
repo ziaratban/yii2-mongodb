@@ -271,7 +271,7 @@ class Transaction extends \yii\base\BaseObject
                     Yii::error($e);
             }
 
-            if(!YII_ENV_PROD || $throw) {
+            if($throw) {
                 throw $e;
             }
             return false;
