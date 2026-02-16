@@ -332,12 +332,12 @@ class Query extends Component implements QueryInterface
      * If this parameter is not given, the `mongodb` application component will be used.
      * @return array the query results. If the query results in nothing, an empty array will be returned.
      */
-    public function all($db = null)
+    public function all($db = null, $execOptions = [])
     {
         if (!empty($this->emulateExecution)) {
             return [];
         }
-        $rows = $this->fetchRows(true, $db);
+        $rows = $this->fetchRows(true, $db, $execOptions);
         return $this->populate($rows);
     }
 

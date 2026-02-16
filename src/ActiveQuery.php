@@ -145,9 +145,9 @@ class ActiveQuery extends Query implements ActiveQueryInterface
      * If null, the Mongo connection returned by [[modelClass]] will be used.
      * @return array|ActiveRecord the query results. If the query results in nothing, an empty array will be returned.
      */
-    public function all($db = null)
+    public function all($db = null, $execOptions = [])
     {
-        return parent::all($db);
+        return parent::all($db, $execOptions);
     }
 
     /**
