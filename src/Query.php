@@ -190,7 +190,7 @@ class Query extends Component implements QueryInterface
      * @param Connection $db the MongoDB connection used to execute the query.
      * @return \MongoDB\Driver\Cursor mongo cursor instance.
      */
-    public function buildCursor($db = null)
+    public function buildCursor($db = null, $execOptions = [])
     {
         $this->prepare();
 
@@ -201,7 +201,7 @@ class Query extends Component implements QueryInterface
         $options['limit'] = $this->limit;
         $options['skip'] = $this->offset;
 
-        $cursor = $this->getCollection($db)->find($this->composeCondition(), $this->select, $options);
+        $cursor = $this->getCollection($db)->find($this->composeCondition(), $this->select, $options, $execOptions);
 
         return $cursor;
     }
@@ -213,10 +213,10 @@ class Query extends Component implements QueryInterface
      * @throws Exception on failure.
      * @return array|bool result.
      */
-    protected function fetchRows($all = true, $db = null)
+    protected function fetchRows($all = true, $db = null, $execOptions = [])
     {
         $db = $this->getDb($db);
-        $cursor = $this->buildCursor($db);
+        $cursor = $this->buildCursor($db, $execOptions);
         $token = 'fetch cursor id = ' . $cursor->getId();
         if ($db->enableLogging) {
             Yii::info($token, __METHOD__);
@@ -285,7 +285,7 @@ class Query extends Component implements QueryInterface
      * and can be traversed to retrieve the data in batches.
      * @since 2.1
      */
-    public function batch($batchSize = 100, $db = null)
+    public function batch($batchSize = 100, $db = null, $execOptions = [])
     {
         return Yii::createObject([
             'class' => BatchQueryResult::className(),
@@ -293,6 +293,7 @@ class Query extends Component implements QueryInterface
             'batchSize' => $batchSize,
             'db' => $this->getDb($db),
             'each' => false,
+            'execOptions' => $execOptions,
         ]);
     }
 
@@ -313,7 +314,7 @@ class Query extends Component implements QueryInterface
      * and can be traversed to retrieve the data in batches.
      * @since 2.1
      */
-    public function each($batchSize = 100, $db = null)
+    public function each($batchSize = 100, $db = null, $execOptions = [])
     {
         return Yii::createObject([
             'class' => BatchQueryResult::className(),
@@ -321,6 +322,7 @@ class Query extends Component implements QueryInterface
             'batchSize' => $batchSize,
             'db' => $this->getDb($db),
             'each' => true,
+            'execOptions' => $execOptions,
         ]);
     }
 
@@ -369,12 +371,12 @@ class Query extends Component implements QueryInterface
      * @return array|false the first row (in terms of an array) of the query result. `false` is returned if the query
      * results in nothing.
      */
-    public function one($db = null)
+    public function one($db = null, $execOptions = [])
     {
         if (!empty($this->emulateExecution)) {
             return false;
         }
-        return $this->fetchRows(false, $db);
+        return $this->fetchRows(false, $db, $execOptions);
     }
 
     /**
@@ -477,14 +479,14 @@ class Query extends Component implements QueryInterface
      * @return int number of records
      * @throws Exception on failure.
      */
-    public function count($q = '*', $db = null)
+    public function count($q = '*', $db = null, $execOptions = [])
     {
         if (!empty($this->emulateExecution)) {
             return 0;
         }
         $this->prepare();
         $collection = $this->getCollection($db);
-        return $collection->count($this->where, $this->options);
+        return $collection->count($this->where, $this->options, $execOptions);
     }
 
     /**

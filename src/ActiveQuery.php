@@ -158,9 +158,9 @@ class ActiveQuery extends Query implements ActiveQueryInterface
      * the query result may be either an array or an ActiveRecord object. Null will be returned
      * if the query results in nothing.
      */
-    public function one($db = null)
+    public function one($db = null, $execOptions = [])
     {
-        $row = parent::one($db);
+        $row = parent::one($db, $execOptions);
         if ($row !== false) {
             $models = $this->populate([$row]);
             return reset($models) ?: null;

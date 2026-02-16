@@ -51,6 +51,8 @@ class BatchQueryResult extends BaseObject implements \Iterator
      */
     public $each = false;
 
+    public $execOptions = [];
+
     /**
      * @var array the data retrieved in the current batch
      */
@@ -126,7 +128,7 @@ class BatchQueryResult extends BaseObject implements \Iterator
         if ($this->_iterator === null) {
             $this->query->addOptions(['batchSize' => $this->batchSize]);
             $db = $this->db === null ? yii::$app->mongodb : $this->db;
-            $cursor = $this->query->buildCursor($db);
+            $cursor = $this->query->buildCursor($db, $this->execOptions);
             if($db->enableLogging){
                 $token = 'fetch cursor id = ' . $cursor->getId();
                 Yii::info($token, __METHOD__);
