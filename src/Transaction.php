@@ -51,6 +51,7 @@ class Transaction extends \yii\base\BaseObject
 
 
     private $queue = [];
+    private $started = false;
 
     /**
      * Set debug message if `enableLogging` property is enable in yii\mongodb\Connection
@@ -125,6 +126,11 @@ class Transaction extends \yii\base\BaseObject
     */
     public function start($transactionOptions = [])
     {
+        if($this->started)
+            throw new Exception('transaction is started.');
+
+        $this->started = true;
+
         Command::prepareManagerOptions($transactionOptions);
         $this->yiiDebug('Starting mongodb transaction ...', __METHOD__);
         if ($this->clientSession->getInTransaction()) {
