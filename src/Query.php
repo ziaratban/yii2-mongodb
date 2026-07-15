@@ -495,7 +495,7 @@ class Query extends Component implements QueryInterface
      * If this parameter is not given, the `mongodb` application component will be used.
      * @return bool whether the query result contains any row of data.
      */
-    public function exists($db = null)
+    public function exists($db = null, $execOptions = [])
     {
         if (!empty($this->emulateExecution)) {
             return false;
@@ -513,7 +513,7 @@ class Query extends Component implements QueryInterface
         $this->limit = 1;
         $this->offset = null;
         $this->select = ['_id'];
-        $cursor = $this->buildCursor($db);
+        $cursor = $this->buildCursor($db, $execOptions);
         #return last options
         $this->limit = $tmpLimit;
         $this->offset = $tmpOffset;
