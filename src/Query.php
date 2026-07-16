@@ -423,7 +423,7 @@ class Query extends Component implements QueryInterface
      * @return array the first column of the query result. An empty array is returned if the query results in nothing.
      * @since 2.1.2
      */
-    public function column($db = null)
+    public function column($db = null, $execOptions = [])
     {
         if (!empty($this->emulateExecution)) {
             return [];
@@ -439,7 +439,7 @@ class Query extends Component implements QueryInterface
         }
 
         $this->asArray();
-        $rows = $this->fetchRows(true,$db);
+        $rows = $this->fetchRows(true,$db,$execOptions);
         $result = [];
         foreach($this->populate($rows) as $row) {
             $result[] = reset($row);
