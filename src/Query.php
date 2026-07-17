@@ -533,12 +533,12 @@ class Query extends Component implements QueryInterface
      * If this parameter is not given, the `mongodb` application component will be used.
      * @return int the sum of the specified column values
      */
-    public function sum($q, $db = null)
+    public function sum($q, $db = null, $execOptions = [])
     {
         if (!empty($this->emulateExecution)) {
             return 0;
         }
-        return $this->aggregate($q, 'sum', $db);
+        return $this->aggregate($q, 'sum', $db, execOptions: $execOptions);
     }
 
     /**
@@ -590,7 +590,7 @@ class Query extends Component implements QueryInterface
      * @param Connection $db the database connection used to execute the query.
      * @return int aggregation result.
      */
-    protected function aggregate($column, $operator, $db)
+    protected function aggregate($column, $operator, $db, $execOptions = [])
     {
         if (!empty($this->emulateExecution)) {
             return null;
@@ -610,7 +610,7 @@ class Query extends Component implements QueryInterface
                 ],
             ]
         ];
-        $result = $collection->aggregate($pipelines);
+        $result = $collection->aggregate($pipelines, execOptions: $execOptions);
         if (array_key_exists(0, $result)) {
             return $result[0]['total'];
         }
